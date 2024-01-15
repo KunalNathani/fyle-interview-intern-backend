@@ -1,3 +1,5 @@
+from core.models.assignments import Assignment, AssignmentStateEnum, GradeEnum
+from core import db
 def test_get_assignments_student_1(client, h_student_1):
     response = client.get(
         '/student/assignments',
@@ -58,6 +60,13 @@ def test_post_assignment_student_1(client, h_student_1):
 
 
 def test_submit_assignment_student_1(client, h_student_1):
+    drafted_assignment: Assignment = Assignment.get_by_id(2)
+    drafted_assignment.state = AssignmentStateEnum.DRAFT
+    # Flush the changes to the database session
+    db.session.flush()
+    # Commit the changes to the database
+    db.session.commit()
+
     response = client.post(
         '/student/assignments/submit',
         headers=h_student_1,
@@ -65,7 +74,7 @@ def test_submit_assignment_student_1(client, h_student_1):
             'id': 2,
             'teacher_id': 2
         })
-
+    print(response.data)
     assert response.status_code == 200
 
     data = response.json['data']
